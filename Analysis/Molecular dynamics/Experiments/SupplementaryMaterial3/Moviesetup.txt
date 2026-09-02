@@ -1,0 +1,34 @@
+Use these commands in Pymol
+
+#Group system in a variable
+create complex, segid PROA+PROB
+
+# Give the complex a real representation (currently still lines otherwise)
+dss complex                          # assign secondary structure for cartoon
+hide lines, complex
+show cartoon, complex and polymer
+color blue, complex and segid PROA
+color yellow, complex and segid PROB
+
+# Environment: split by what it actually contains, since water/ions/lipids need different representations to support transparency correctly
+select water_ions, not segid PROA+PROB and (resn TIP3+SOD+CLA)
+select lipids, not segid PROA+PROB and not resn TIP3+SOD+CLA
+
+hide lines, water_ions or lipids
+
+# Water + ions: use nb_spheres (supports sphere_transparency)
+show nb_spheres, water_ions
+set sphere_transparency, 0.85, water_ions
+
+# Lipids: bonded, so sticks work and support stick_transparency
+show sticks, lipids
+set stick_transparency, 0.85, lipids
+
+#Create the movie
+cd path\to\MDexperiment
+system mkdir Pep0Job9_movie
+mpng Pep0Job9_movie/frame
+
+Go to the terminal and write in the MDexperiment directory (ffmepg may need installing): 
+ffmpeg -framerate 30 -i Pep0Job9_movie/frame%04d.png -c:v libx264 -pix_fmt yuv420p Pep0Job9_movie.mp4
+
