@@ -1,0 +1,51 @@
+The following document describes the contents of the files and how to navigate around
+
+
+====Analysis=====
+
+This directory contains the in-depth analysis. It includes input files, running scripts, outputs and documents containing a clear list of results. It is divided in 3 sections
+
+1. Raw data
+This directory has its own README file with detailed instructions on how to filter GPCRs for later simulations based on pLDDT, length, cluster and GPCR class. The running scripts, inputs, directories and outputs are available. This was the starting point before running AlphaFold simulations. 
+
+2. Molecular dynamics
+It contains several files inside. B vitrea lipid composition and SupplementaryMaterial_2 are complementary and describe the details of how the lipid membrane composition during MD simulations was approximated using B. vitrea as model organism.
+
+Next, we have run_md_array, which is basically the file that runs Molecular dynamics simulations using NAMD3. Depending on the amount of simultaneous jobs only #SBATCH --array=0-1 line needs to be changed along with the systems file where the location of each simulated complex is defined.
+
+Experiments directory contains the results of Molecular dynamics. It has the inputs for the experiments (where the step7_input.inp file can be modified to adjust the running time from 1 ns by default to 10 or more nanoseconds), and the results for every type of system. Inside each system and inside charmmxxxxx --> namd an additional file is created called analysis.py that creates files needed for plotting. There is a Plots directory with all the plots detailing results of the simulation. A python script is available for the same.
+
+TMR files were generated using DeepTMHMM and contain the transmembrane domain locations for every GPCR tested. Later domains can be calculated for any GPCR using this tool.
+
+Steps for the workflow
+a. Load the pdb files of the AF complexes and GPCRs alone in CHARMM-GUI Lipid Bilayer builder
+b. Let all settings by default.
+	1. Use PPM 2.0
+	2. Use the lipid membrane composition as Table 2 in the report
+	3. Adjust the box size to a size where the box is larger than the box. You should see warning messages to increase or decrease the box. The larger the box, the longer the simulation
+	4. Set 0.6M for ions of NaCl
+	5. Set 291.15 K for T and NAMD formats
+	6. When downloaded, change step7_input.inp to run 10 ns instead of the 1 ns default
+c. Load the input files generated in BluePebble
+d. Run run_md_array.sh. Check sbatch for the amount of jobs submitted simultaneously and the directories where the files are going to be extracted, as well as the location of NAMD3 in your terminal in BP
+e. Extract the files from the finished MD simulations and run analysis.py for each one. This will create .dat files
+f. Take the .dat files to the Plots directory (or any directory of your choice) and run the .dat files with the Plots.py script. This will produce the graphs
+
+3. Alphafold
+This folder contains all the Alphafold work. It has the complex structure predictions for 16 peptides, onelineseq_final.txt, run_af.py and submit.sh which are the files necessary to run Alphafold simulations for the 234 GPCRs available in the onelineseq_final.txt file. For every simulation, the only thing that needs change is in run_af.py file where the peptide sequence needs to be changed every run. 
+
+The results are both put in Neuropeptide_receptor_pair_list.xlsx file in the form of pure sequences as per Alphafold scoring, and Supplementary_material_1 which is referenced in the final report and contains peptide, ID from matching GPCRs, homolog blast_GPCRdb predicted function, binding mode (ICD, ECD or TM) and AlphaFold (AF) score parameters (iPTM, pLDDT).
+
+Steps to use in the workflow:
+
+a. Load onelineseq_final.txt, run_af.py and submit.sh in Isambard. 
+b. Open run_af.py and change the peptide sequence
+c. open submit.sh and check HPC requirements match to those of Isambard, as per 30-Aug-2026, these should be the same by default. No changes needed
+d. run submit.sh for the amount of simulations you want to perform. It can be done in batches by using sbatch commands
+
+
+
+
+
+
+
